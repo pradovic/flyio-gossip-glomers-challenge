@@ -9,3 +9,6 @@ serde_json = "1.0"
 serde = { version = "1", features = ["derive"] }
 maelstrom-node="0.1.6"
 async-trait = "0.1.68"
+uuid = { version = "1.12.1", features = ["v4", "fast-rng", "macro-diagnostics"] }
+redb = "2"
+log = "0.4"
