@@ -91,7 +91,27 @@ impl Node for Handler {
                         continue;
                     }
 
-                    rt.call_async(node, Request::Broadcast { message });
+                    let rt_clone = rt.clone();
+                    tokio::spawn(async move {
+                        let mut reties = 0;
+
+                        while rt_clone
+                            .rpc(node.to_string(), Request::Broadcast { message })
+                            .await
+                            .is_err()
+                        {
+                            reties += 1;
+                            if reties > 3 {
+                                break;
+                            }
+
+                            // sleep with exponential backoff + random component
+                            tokio::time::sleep(std::time::Duration::from_secs(
+                                2_u64.pow(reties) + rand::random::<u64>() % 1000,
+                            ))
+                            .await;
+                        }
+                    });
                 }
 
                 let mut resp = req.body.clone().with_type("broadcast_ok");
@@ -137,10 +157,7 @@ impl Node for Handler {
                 return rt.reply(req, resp).await;
             }
 
-            _ => {
-                eprintln!("Raw Body: {:?}", req.body);
-                eprintln!("Message: {:?} failed to match", msg);
-            }
+            _ => info!("Message: {:?} failed to match", msg),
         };
 
         done(rt, req)

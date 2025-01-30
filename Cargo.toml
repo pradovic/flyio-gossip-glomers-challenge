@@ -12,3 +12,4 @@ async-trait = "0.1.68"
 uuid = { version = "1.12.1", features = ["v4", "fast-rng", "macro-diagnostics"] }
 redb = "2"
 log = "0.4"
+rand = "0.8"
